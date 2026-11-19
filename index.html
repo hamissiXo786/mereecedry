@@ -1,0 +1,283 @@
+<title>Marcus Bennet</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&display=swap">
+<style>
+  /* Layout: one full-viewport poster. BG photo, giant scrolling name, cutout portrait over it, thin chrome on top. */
+  :root {
+    --cream: #efeee9;
+    --ink: #141414;
+    --scrim: rgba(0, 0, 0, 0.4);
+    --font-hn: "Helvetica Neue ME", "Helvetica Neue", Helvetica, Inter, Arial, sans-serif;
+    --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+    --ease-io: cubic-bezier(0.76, 0, 0.24, 1);
+    color-scheme: dark;
+  }
+
+  html, body { height: 100%; }
+  body {
+    margin: 0;
+    background: var(--ink);
+    color: var(--cream);
+    font-family: var(--font-hn);
+    font-weight: 500;
+    overflow: hidden;
+    -webkit-font-smoothing: antialiased;
+  }
+  a { color: var(--cream); text-decoration: none; }
+  ul { list-style: none; margin: 0; padding: 0; }
+  p { margin: 0; }
+  *, *::before, *::after { box-sizing: border-box; }
+  :focus-visible { outline: 1px solid var(--cream); outline-offset: 4px; }
+
+  /* ---------- hero ---------- */
+  .hero {
+    position: relative;
+    width: 100%;
+    height: calc(100dvh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px));
+    overflow: hidden;
+    background: var(--ink);
+    color: var(--cream);
+    font-family: var(--font-hn);
+  }
+  .layer-img {
+    position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover;
+  }
+  .front { z-index: 20; pointer-events: none; }
+
+  /* ---------- header ---------- */
+  .header {
+    position: absolute; inset: 0 0 auto 0; z-index: 30;
+    display: flex; align-items: flex-start; justify-content: space-between;
+    padding: 1.5rem max(1.5rem, env(safe-area-inset-right, 0px)) 0 max(1.5rem, env(safe-area-inset-left, 0px));
+  }
+  .brand { font-size: 1.125rem; line-height: 1.75rem; letter-spacing: 0.025em; }
+  .cluster { display: none; align-items: flex-start; gap: 4rem; font-size: 0.875rem; line-height: 1.25rem; }
+  .stack { display: flex; flex-direction: column; gap: 0.125rem; }
+  .stack a { display: inline-block; transition: opacity 300ms ease; }
+  .stack a:hover { opacity: 0.6; }
+
+  /* ---------- marquee ---------- */
+  .marquee-wrap {
+    position: absolute; inset-inline: 0; top: 16vh; z-index: 10; overflow: hidden;
+  }
+  .marquee {
+    display: flex; width: max-content; white-space: nowrap;
+    font-family: var(--font-hn); font-size: 16vh; line-height: 1; color: var(--cream);
+    animation: marquee 30s linear infinite;
+  }
+  .marquee span { padding-right: 6vw; }
+
+  /* ---------- rule + footer ---------- */
+  .rule {
+    position: absolute; inset-inline: 1.5rem; bottom: 5.5rem; z-index: 10;
+    height: 2px; background: var(--cream); transform-origin: left;
+  }
+  .footer {
+    position: absolute; inset: auto 0 0 0; z-index: 30;
+    display: flex; align-items: flex-end; justify-content: space-between;
+    padding: 0 max(1.5rem, env(safe-area-inset-right, 0px)) 1.25rem max(1.5rem, env(safe-area-inset-left, 0px));
+    font-family: var(--font-hn); font-size: 0.75rem; line-height: 1.625;
+  }
+  .footer .right { text-align: right; }
+
+  /* ---------- hamburger ---------- */
+  .burger {
+    position: fixed; z-index: 50;
+    top: calc(1.125rem + env(safe-area-inset-top, 0px));
+    right: calc(1rem + env(safe-area-inset-right, 0px));
+    width: 2.5rem; height: 2.5rem; padding: 0; border: 0; background: none; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .bars { position: relative; width: 1.5rem; height: 1rem; display: block; }
+  .bars i {
+    position: absolute; left: 0; width: 100%; height: 2px; background: var(--cream);
+    transition: transform 500ms var(--ease-io), opacity 300ms ease;
+  }
+  .bars i:nth-child(1) { top: 0; }
+  .bars i:nth-child(2) { top: 7px; }
+  .bars i:nth-child(3) { top: 14px; }
+  .is-open .bars i:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+  .is-open .bars i:nth-child(2) { opacity: 0; }
+  .is-open .bars i:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+
+  /* ---------- mobile drawer ---------- */
+  .backdrop {
+    position: fixed; inset: 0; z-index: 40;
+    background: var(--scrim); -webkit-backdrop-filter: blur(4px); backdrop-filter: blur(4px);
+    opacity: 0; pointer-events: none; transition: opacity 500ms ease;
+  }
+  .is-open .backdrop { opacity: 1; pointer-events: auto; }
+  .panel {
+    position: fixed; top: 0; right: 0; bottom: 0; z-index: 40;
+    width: 80%; max-width: 24rem; background: #141414; padding: 2.5rem 2rem;
+    display: flex; flex-direction: column; gap: 3rem; overflow-y: auto;
+    transform: translateX(100%); transition: transform 600ms var(--ease-io);
+    padding-top: calc(2.5rem + env(safe-area-inset-top, 0px));
+    padding-bottom: calc(2.5rem + env(safe-area-inset-bottom, 0px));
+  }
+  .is-open .panel { transform: translateX(0); }
+  .close {
+    position: absolute; right: 1.5rem; top: 1.5rem; padding: 0; border: 0; background: none;
+    color: var(--cream); line-height: 0; cursor: pointer;
+    transform: rotate(90deg); opacity: 0; transition: transform 500ms var(--ease-io), opacity 500ms ease;
+  }
+  .is-open .close { transform: rotate(0); opacity: 1; transition-delay: 300ms; }
+  .label {
+    font-size: 0.75rem; line-height: 1rem; text-transform: uppercase; letter-spacing: 0.2em;
+    color: rgba(239, 238, 233, 0.5); margin-bottom: 1.25rem;
+  }
+  .d-item {
+    opacity: 0; transform: translateY(1.5rem);
+    transition: opacity 700ms var(--ease-out), transform 700ms var(--ease-out);
+  }
+  .d-item.sm { transform: translateY(1rem); }
+  .is-open .d-item { opacity: 1; transform: none; transition-delay: var(--d, 0ms); }
+  .panel .nav-list { display: flex; flex-direction: column; gap: 0.5rem; }
+  .panel .nav-list a { font-size: 2.25rem; line-height: 2.5rem; }
+  .panel .soc-list { display: flex; flex-wrap: wrap; gap: 0.5rem 1.5rem; font-size: 0.875rem; line-height: 1.25rem; }
+  .panel .find { margin-top: auto; }
+
+  /* ---------- entrance animations ---------- */
+  .anim-fade-in  { animation: fade-in 1.2s ease-out both; }
+  .anim-rise-in  { animation: rise-in 1.4s var(--ease-out) both; }
+  .anim-fade-up  { animation: fade-up 0.9s var(--ease-out) both; }
+  .anim-line     { animation: line 1.1s var(--ease-io) both; }
+  @keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
+  @keyframes rise-in {
+    from { opacity: 0; transform: translateY(4vh) scale(1.03); }
+    to   { opacity: 1; transform: translateY(0) scale(1); }
+  }
+  @keyframes fade-up {
+    from { opacity: 0; transform: translateY(28px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes line { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+  @keyframes marquee { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+
+  /* ---------- sm and up ---------- */
+  @media (min-width: 640px) {
+    .header { padding-top: 2rem; padding-left: max(2.5rem, env(safe-area-inset-left, 0px)); padding-right: max(2.5rem, env(safe-area-inset-right, 0px)); }
+    .cluster { display: flex; }
+    .marquee-wrap { top: 14vh; }
+    .marquee { font-size: 26vh; }
+    .rule { inset-inline: 2.5rem; bottom: 7rem; }
+    .footer { z-index: 10; padding: 0 max(2.5rem, env(safe-area-inset-right, 0px)) 2rem max(2.5rem, env(safe-area-inset-left, 0px)); font-size: 0.875rem; }
+    .burger, .backdrop, .panel { display: none; }
+  }
+  @media (min-width: 1024px) { .cluster { gap: 6rem; } }
+
+  /* ---------- reduced motion ---------- */
+  @media (prefers-reduced-motion: reduce) {
+    .anim-fade-in, .anim-rise-in, .anim-fade-up, .anim-line {
+      animation-duration: 0.01ms !important; animation-delay: 0s !important;
+    }
+    .marquee { animation: none; }
+    .bars i, .backdrop, .panel, .close, .d-item { transition-duration: 0.01ms !important; transition-delay: 0s !important; }
+  }
+</style>
+
+<main class="hero" id="hero">
+  <!-- BG -->
+  <img class="layer-img anim-fade-in" alt=""
+       src="assets/bg.webp">
+
+  <!-- Marquee name -->
+  <div class="marquee-wrap anim-fade-up" style="animation-delay:500ms">
+    <div class="marquee" aria-label="Marcus Bennet">
+      <span aria-hidden="true">Marcus &mdash; Bennet&nbsp;</span>
+      <span aria-hidden="true">Marcus &mdash; Bennet&nbsp;</span>
+    </div>
+  </div>
+
+  <!-- Cream rule -->
+  <div class="rule anim-line" style="animation-delay:1200ms"></div>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="left anim-fade-up" style="animation-delay:1400ms">
+      <p>Visuals Composer</p>
+      <p>Digital Crafter</p>
+      <p>Obsessed by The Office</p>
+    </div>
+    <div class="right anim-fade-up" style="animation-delay:1550ms">
+      <p>A homage to</p>
+      <p>Marcus Holloway</p>
+    </div>
+  </footer>
+
+  <!-- Front portrait -->
+  <img class="layer-img front anim-rise-in" alt="Portrait" style="animation-delay:300ms"
+       src="assets/portrait.png">
+
+  <!-- Header -->
+  <header class="header">
+    <div class="anim-fade-up" style="animation-delay:800ms"><a class="brand" href="#">Marcus</a></div>
+    <div class="cluster">
+      <div class="anim-fade-up" style="animation-delay:900ms">2025</div>
+      <ul class="stack">
+        <li class="anim-fade-up" style="animation-delay:1000ms"><a href="#">Story</a></li>
+        <li class="anim-fade-up" style="animation-delay:1080ms"><a href="#">Jobs</a></li>
+        <li class="anim-fade-up" style="animation-delay:1160ms"><a href="#">Message</a></li>
+      </ul>
+      <ul class="stack">
+        <li class="anim-fade-up" style="animation-delay:1150ms"><a href="#">Instagram</a></li>
+        <li class="anim-fade-up" style="animation-delay:1230ms"><a href="#">TikTok</a></li>
+        <li class="anim-fade-up" style="animation-delay:1310ms"><a href="#">YouTube</a></li>
+      </ul>
+    </div>
+  </header>
+
+  <!-- Mobile hamburger (z-50, always on top) -->
+  <button class="burger anim-fade-up" id="burger" type="button" style="animation-delay:900ms"
+          aria-label="Open menu" aria-expanded="false" aria-controls="panel">
+    <span class="bars"><i></i><i></i><i></i></span>
+  </button>
+
+  <!-- Mobile drawer (z-40) -->
+  <div class="backdrop" id="backdrop"></div>
+  <aside class="panel" id="panel" aria-label="Menu" inert>
+    <button class="close" id="close" type="button" aria-label="Close menu">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+    </button>
+    <nav>
+      <p class="label d-item sm" style="--d:250ms">Site Index</p>
+      <ul class="nav-list">
+        <li class="d-item" style="--d:300ms"><a href="#">Story</a></li>
+        <li class="d-item" style="--d:380ms"><a href="#">Jobs</a></li>
+        <li class="d-item" style="--d:460ms"><a href="#">Message</a></li>
+      </ul>
+    </nav>
+    <div class="find">
+      <p class="label d-item sm" style="--d:500ms">Find Me</p>
+      <ul class="soc-list">
+        <li class="d-item sm" style="--d:550ms"><a href="#">Instagram</a></li>
+        <li class="d-item sm" style="--d:610ms"><a href="#">TikTok</a></li>
+        <li class="d-item sm" style="--d:670ms"><a href="#">YouTube</a></li>
+      </ul>
+    </div>
+  </aside>
+</main>
+
+<script>
+  (function () {
+    var hero = document.getElementById('hero');
+    var burger = document.getElementById('burger');
+    var panel = document.getElementById('panel');
+    var open = false;
+    function set(v) {
+      open = v;
+      hero.classList.toggle('is-open', v);
+      burger.setAttribute('aria-expanded', String(v));
+      burger.setAttribute('aria-label', v ? 'Close menu' : 'Open menu');
+      if (v) panel.removeAttribute('inert'); else panel.setAttribute('inert', '');
+      document.body.style.overflow = v ? 'hidden' : '';
+    }
+    burger.addEventListener('click', function () { set(!open); });
+    document.getElementById('close').addEventListener('click', function () { set(false); });
+    document.getElementById('backdrop').addEventListener('click', function () { set(false); });
+    document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && open) set(false); });
+    panel.addEventListener('click', function (e) { if (e.target.closest('a')) set(false); });
+    window.matchMedia('(min-width: 640px)').addEventListener('change', function (m) { if (m.matches && open) set(false); });
+  })();
+</script>
